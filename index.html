@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>API Caller</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #212121;
+            color: #ffffff;
+            text-align: center;
+            margin-top: 100px;
+        }
+
+        h1 {
+            color: #66ccff;
+        }
+
+        form {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            margin-top: 20px;
+        }
+
+        label {
+            color: #66ccff;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        input[type="text"] {
+            padding: 10px;
+            border: 2px solid #66ccff;
+            border-radius: 5px;
+            width: 300px;
+            font-size: 16px;
+            color: #ffffff;
+            background-color: #333333;
+        }
+
+        input[type="submit"] {
+            padding: 10px 20px;
+            margin-top: 10px;
+            background-color: #66ccff;
+            color: #ffffff;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        input[type="submit"]:hover {
+            background-color: #4da6ff;
+        }
+    </style>
+</head>
+<body>
+    <h1>API Caller - Cybersecurity Edition</h1>
+    <form action="/" method="POST">
+        <label for="input_data">Enter Input Data:</label>
+        <input type="text" name="input_data" id="input_data" required>
+        <input type="submit" value="Call API">
+    </form>
+</body>
+</html>
