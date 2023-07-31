@@ -1,0 +1,1 @@
+result_df = df.groupby('ID')['Value'].agg(list).reset_index()
