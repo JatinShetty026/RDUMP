@@ -1,1 +1,3 @@
 result_df = df.groupby('ID')['Value'].agg(list).reset_index()
+
+result_df = pd.merge(result_df, df[['ID', 'OtherColumn']].drop_duplicates(), on='ID')
