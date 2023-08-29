@@ -1,3 +1,23 @@
-result_df = df.groupby('ID')['Value'].agg(list).reset_index()
+# Install and import the AzureAD module if not already installed
+# Install-Module AzureAD
 
-result_df = pd.merge(result_df, df[['ID', 'OtherColumn']].drop_duplicates(), on='ID')
+# Import the AzureAD module
+Import-Module AzureAD
+
+# Connect to Azure AD
+Connect-AzureAD
+
+# Get all dynamic groups
+$dynamicGroups = Get-AzureADGroup -All $true | Where-Object { $_.GroupTypes -contains "DynamicMembership" }
+
+# Iterate through each dynamic group and retrieve name and membership rule
+foreach ($group in $dynamicGroups) {
+    $groupName = $group.DisplayName
+    $membershipRule = $group.MembershipRule
+    Write-Output "Group Name: $groupName"
+    Write-Output "Membership Rule: $membershipRule"
+    Write-Output "-------------------"
+}
+
+# Disconnect from Azure AD
+Disconnect-AzureAD
