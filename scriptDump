@@ -1,23 +1,16 @@
-# Install and import the AzureAD module if not already installed
-# Install-Module AzureAD
+$filePath = "C:\path\to\file.txt"
+$maxRetries = 5
+$retryDelay = 5  # seconds
 
-# Import the AzureAD module
-Import-Module AzureAD
-
-# Connect to Azure AD
-Connect-AzureAD
-
-# Get all dynamic groups
-$dynamicGroups = Get-AzureADGroup -All $true | Where-Object { $_.GroupTypes -contains "DynamicMembership" }
-
-# Iterate through each dynamic group and retrieve name and membership rule
-foreach ($group in $dynamicGroups) {
-    $groupName = $group.DisplayName
-    $membershipRule = $group.MembershipRule
-    Write-Output "Group Name: $groupName"
-    Write-Output "Membership Rule: $membershipRule"
-    Write-Output "-------------------"
+for ($i = 1; $i -le $maxRetries; $i++) {
+    try {
+        # Attempt to access the file
+        $fileContent = Get-Content -Path $filePath
+        Write-Host "File accessed successfully."
+        break  # Exit the loop if successful
+    } catch {
+        Write-Host "Attempt $i: $_"
+        Write-Host "Retrying in $retryDelay seconds..."
+        Start-Sleep -Seconds $retryDelay
+    }
 }
-
-# Disconnect from Azure AD
-Disconnect-AzureAD
