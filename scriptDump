@@ -1,16 +1,24 @@
-$filePath = "C:\path\to\file.txt"
-$maxRetries = 5
-$retryDelay = 5  # seconds
+# Import the AzureAD module
+Import-Module AzureAD
 
-for ($i = 1; $i -le $maxRetries; $i++) {
-    try {
-        # Attempt to access the file
-        $fileContent = Get-Content -Path $filePath
-        Write-Host "File accessed successfully."
-        break  # Exit the loop if successful
-    } catch {
-        Write-Host "Attempt $i: $_"
-        Write-Host "Retrying in $retryDelay seconds..."
-        Start-Sleep -Seconds $retryDelay
-    }
+# Connect to your Azure AD tenant (you will be prompted for credentials)
+Connect-AzureAD
+
+# Get all app registrations in Azure AD
+$allAppRegistrations = Get-AzureADApplication
+
+# Loop through each app registration and retrieve the expiry date
+foreach ($appRegistration in $allAppRegistrations) {
+    $appName = $appRegistration.DisplayName
+    $appId = $appRegistration.AppId
+    $expiryDate = $appRegistration.EndDate
+
+    # Output the information
+    Write-Host "App Name: $appName"
+    Write-Host "App ID: $appId"
+    Write-Host "Expiry Date: $expiryDate"
+    Write-Host "------------------------"
 }
+
+# Disconnect from Azure AD (optional)
+Disconnect-AzureAD
