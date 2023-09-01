@@ -4,11 +4,11 @@ Import-Module AzureAD
 # Connect to your Azure AD tenant (you will be prompted for credentials)
 Connect-AzureAD
 
-# Get all app registrations in Azure AD
-$allAppRegistrations = Get-AzureADApplication
-
 # Specify the path for the CSV file where you want to save the data
 $csvFilePath = "C:\Path\To\Your\File.csv"
+
+# Get all app registrations in Azure AD
+$allAppRegistrations = Get-AzureADApplication
 
 # Create an empty array to store the app registration information
 $appRegistrationInfo = @()
@@ -17,17 +17,24 @@ $appRegistrationInfo = @()
 foreach ($appRegistration in $allAppRegistrations) {
     $appName = $appRegistration.DisplayName
     $appId = $appRegistration.AppId
-    $expiryDate = $appRegistration.EndDate
+    
+    # Get the secrets for the app registration
+    $secrets = Get-AzureADApplicationPasswordCredential -ObjectId $appRegistration.ObjectId
+    
+    # Loop through the secrets and retrieve the expiry date
+    foreach ($secret in $secrets) {
+        $expiryDate = $secret.EndDate
 
-    # Create a custom object to store the information
-    $appInfo = [PSCustomObject]@{
-        "App Name" = $appName
-        "App ID" = $appId
-        "Expiry Date" = $expiryDate
+        # Create a custom object to store the information
+        $appInfo = [PSCustomObject]@{
+            "App Name" = $appName
+            "App ID" = $appId
+            "Secret Expiry Date" = $expiryDate
+        }
+
+        # Add the custom object to the array
+        $appRegistrationInfo += $appInfo
     }
-
-    # Add the custom object to the array
-    $appRegistrationInfo += $appInfo
 }
 
 # Export the array of app registration information to a CSV file
