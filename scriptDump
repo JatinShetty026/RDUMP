@@ -7,18 +7,31 @@ Connect-AzureAD
 # Get all app registrations in Azure AD
 $allAppRegistrations = Get-AzureADApplication
 
-# Loop through each app registration and retrieve the expiry date
+# Specify the path for the CSV file where you want to save the data
+$csvFilePath = "C:\Path\To\Your\File.csv"
+
+# Create an empty array to store the app registration information
+$appRegistrationInfo = @()
+
+# Loop through each app registration and retrieve the data
 foreach ($appRegistration in $allAppRegistrations) {
     $appName = $appRegistration.DisplayName
     $appId = $appRegistration.AppId
     $expiryDate = $appRegistration.EndDate
 
-    # Output the information
-    Write-Host "App Name: $appName"
-    Write-Host "App ID: $appId"
-    Write-Host "Expiry Date: $expiryDate"
-    Write-Host "------------------------"
+    # Create a custom object to store the information
+    $appInfo = [PSCustomObject]@{
+        "App Name" = $appName
+        "App ID" = $appId
+        "Expiry Date" = $expiryDate
+    }
+
+    # Add the custom object to the array
+    $appRegistrationInfo += $appInfo
 }
+
+# Export the array of app registration information to a CSV file
+$appRegistrationInfo | Export-Csv -Path $csvFilePath -NoTypeInformation
 
 # Disconnect from Azure AD (optional)
 Disconnect-AzureAD
