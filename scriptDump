@@ -1,17 +1,18 @@
 # Define your parameters
 $ouPath = "OU=YourOU,DC=example,DC=com"  # Replace with the actual OU path
-$groupNamesFile = "C:\Path\To\GroupNames.txt"  # Replace with the path to your text file
+$csvFile = "C:\Path\To\GroupNames.csv"  # Replace with the path to your CSV file
 
 # Check if the Active Directory module is loaded, and load it if not
 if (-not (Get-Module -Name ActiveDirectory)) {
     Import-Module ActiveDirectory
 }
 
-# Read the group names from the text file and create the groups
-$groupNames = Get-Content $groupNamesFile
+# Read group names and SAM account names from the CSV file and create the groups
+$groupData = Import-Csv -Path $csvFile
 
-foreach ($groupName in $groupNames) {
-    $samAccountName = $groupName  # You can customize this if needed
+foreach ($entry in $groupData) {
+    $groupName = $entry.GroupName
+    $samAccountName = $entry.SamAccountName
     New-ADGroup -Name $groupName -GroupScope Universal -Path $ouPath -GroupCategory Security -SamAccountName $samAccountName
 
     # Optional: Add members to the group if needed
