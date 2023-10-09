@@ -1,33 +1,21 @@
-# Define your Microsoft 365 credentials
-$clientId = "Your_Client_ID"
-$clientSecret = "Your_Client_Secret"
-$tenantId = "Your_Tenant_ID"
+# Define your parameters
+$ouPath = "OU=YourOU,DC=example,DC=com"  # Replace with the actual OU path
+$groupNamesFile = "C:\Path\To\GroupNames.txt"  # Replace with the path to your text file
 
-# Define the API endpoint to retrieve the App Connectors
-$apiEndpoint = "https://graph.microsoft.com/v1.0/me/applications"
-
-# Authenticate and get an access token
-$tokenUrl = "https://login.microsoftonline.com/$tenantId/oauth2/token"
-$body = @{
-    client_id     = $clientId
-    scope         = "https://graph.microsoft.com/.default"
-    client_secret = $clientSecret
-    grant_type    = "client_credentials"
+# Check if the Active Directory module is loaded, and load it if not
+if (-not (Get-Module -Name ActiveDirectory)) {
+    Import-Module ActiveDirectory
 }
-$tokenResponse = Invoke-RestMethod -Method Post -Uri $tokenUrl -ContentType "application/x-www-form-urlencoded" -Body $body
 
-# Extract the access token
-$accessToken = $tokenResponse.access_token
+# Read the group names from the text file and create the groups
+$groupNames = Get-Content $groupNamesFile
 
-# Make a GET request to the Microsoft Graph API to list App Connectors
-$headers = @{
-    Authorization = "Bearer $accessToken"
-}
-$appConnectors = Invoke-RestMethod -Method Get -Uri $apiEndpoint -Headers $headers
+foreach ($groupName in $groupNames) {
+    $samAccountName = $groupName  # You can customize this if needed
+    New-ADGroup -Name $groupName -GroupScope Universal -Path $ouPath -GroupCategory Security -SamAccountName $samAccountName
 
-# Display the list of App Connectors
-$appConnectors.value | ForEach-Object {
-    Write-Host "App Connector Name: $($_.displayName)"
-    Write-Host "App Connector ID: $($_.id)"
-    Write-Host "------------------------"
+    # Optional: Add members to the group if needed
+    # Add-ADGroupMember -Identity $groupName -Members "User1", "User2", ...
+
+    Write-Host "Security group '$groupName' with Universal scope and SAM account name '$samAccountName' created in OU '$ouPath'."
 }
