@@ -1,22 +1,26 @@
-# Define your parameters
-$ouPath = "OU=YourOU,DC=example,DC=com"  # Replace with the actual OU path
-$csvFile = "C:\Path\To\GroupNames.csv"  # Replace with the path to your CSV file
+# Specify the CSV file path
+$csvFilePath = "C:\path\to\your\file.csv"
 
-# Check if the Active Directory module is loaded, and load it if not
-if (-not (Get-Module -Name ActiveDirectory)) {
-    Import-Module ActiveDirectory
+# Specify the value you want to check for
+$valueToCheck = "YourValueToCheck"
+
+# Read the CSV file
+$csvData = Import-Csv -Path $csvFilePath
+
+# Initialize a flag to indicate if the value is found
+$valueFound = $false
+
+# Iterate through the rows and check the first column
+foreach ($row in $csvData) {
+    if ($row.'ColumnNameOfFirstColumn' -eq $valueToCheck) {
+        $valueFound = $true
+        break  # Exit the loop if the value is found
+    }
 }
 
-# Read group names and SAM account names from the CSV file and create the groups
-$groupData = Import-Csv -Path $csvFile
-
-foreach ($entry in $groupData) {
-    $groupName = $entry.GroupName
-    $samAccountName = $entry.SamAccountName
-    New-ADGroup -Name $groupName -GroupScope Universal -Path $ouPath -GroupCategory Security -SamAccountName $samAccountName
-
-    # Optional: Add members to the group if needed
-    # Add-ADGroupMember -Identity $groupName -Members "User1", "User2", ...
-
-    Write-Host "Security group '$groupName' with Universal scope and SAM account name '$samAccountName' created in OU '$ouPath'."
+# Check the flag and output the result
+if ($valueFound) {
+    Write-Host "The value '$valueToCheck' was found in the first column of the CSV file."
+} else {
+    Write-Host "The value '$valueToCheck' was not found in the first column of the CSV file."
 }
