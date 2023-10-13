@@ -1,26 +1,17 @@
-# Specify the CSV file path
-$csvFilePath = "C:\path\to\your\file.csv"
+# Connect to Exchange Online
+Connect-ExchangeOnline -UserPrincipalName youradmin@yourdomain.com -ShowProgress $true
 
-# Specify the value you want to check for
-$valueToCheck = "YourValueToCheck"
+# Define the distribution group name and the path to the text file
+$DistributionGroupName = "YourDistributionGroup"
+$MemberListFile = "C:\Path\To\TextFile.txt"
 
-# Read the CSV file
-$csvData = Import-Csv -Path $csvFilePath
+# Import the list of members from the text file
+$Members = Get-Content $MemberListFile
 
-# Initialize a flag to indicate if the value is found
-$valueFound = $false
-
-# Iterate through the rows and check the first column
-foreach ($row in $csvData) {
-    if ($row.'ColumnNameOfFirstColumn' -eq $valueToCheck) {
-        $valueFound = $true
-        break  # Exit the loop if the value is found
-    }
+# Add members to the distribution group
+foreach ($Member in $Members) {
+    Add-DistributionGroupMember -Identity $DistributionGroupName -Member $Member
 }
 
-# Check the flag and output the result
-if ($valueFound) {
-    Write-Host "The value '$valueToCheck' was found in the first column of the CSV file."
-} else {
-    Write-Host "The value '$valueToCheck' was not found in the first column of the CSV file."
-}
+# Disconnect from Exchange Online
+Disconnect-ExchangeOnline -Confirm:$false
