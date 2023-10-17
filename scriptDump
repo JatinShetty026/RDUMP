@@ -1,17 +1,27 @@
-# Connect to Exchange Online
-Connect-ExchangeOnline -UserPrincipalName youradmin@yourdomain.com -ShowProgress $true
+# Define the extensionAttribute value you want to set
+$extensionAttributeNewValue = "NewValueHere"
 
-# Define the distribution group name and the path to the text file
-$DistributionGroupName = "YourDistributionGroup"
-$MemberListFile = "C:\Path\To\TextFile.txt"
+# Specify the group name (change to the actual group name)
+$groupName = "YourGroupName"
 
-# Import the list of members from the text file
-$Members = Get-Content $MemberListFile
-
-# Add members to the distribution group
-foreach ($Member in $Members) {
-    Add-DistributionGroupMember -Identity $DistributionGroupName -Member $Member
+# Import the Active Directory module if not already loaded
+if (-not (Get-Module -Name ActiveDirectory)) {
+    Import-Module ActiveDirectory
 }
 
-# Disconnect from Exchange Online
-Disconnect-ExchangeOnline -Confirm:$false
+# Get the group members
+$groupMembers = Get-ADGroupMember -Identity $groupName
+
+# Loop through the group members and update the extensionAttribute
+foreach ($member in $groupMembers) {
+    if ($member.objectClass -eq "user") {
+        # Check if the member is a user object
+        $user = Get-ADUser -Identity $member
+        # Update the extensionAttribute (change -replace to -add if you want to append)
+        Set-ADUser -Identity $user -Replace @{extensionAttribute1 = $extensionAttributeNewValue}
+        Write-Host "Updated extensionAttribute for $($user.SamAccountName)"
+    }
+    else {
+        Write-Host "$($member.Name) is not a user object and will not be updated."
+    }
+}
