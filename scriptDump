@@ -1,27 +1,25 @@
-# Define the extensionAttribute value you want to set
-$extensionAttributeNewValue = "NewValueHere"
+# Install the AzureAD module if you haven't already
+# Install-Module -Name AzureAD
 
-# Specify the group name (change to the actual group name)
-$groupName = "YourGroupName"
+# Connect to Azure AD
+Connect-AzureAD
 
-# Import the Active Directory module if not already loaded
-if (-not (Get-Module -Name ActiveDirectory)) {
-    Import-Module ActiveDirectory
-}
+# Get a list of all Enterprise Applications
+$enterpriseApps = Get-AzureADApplication -Filter "tags/any(c:c eq 'WindowsAzureActiveDirectoryOnPremises' or c eq 'WindowsAzureActiveDirectoryIntegratedApp')"
 
-# Get the group members
-$groupMembers = Get-ADGroupMember -Identity $groupName
-
-# Loop through the group members and update the extensionAttribute
-foreach ($member in $groupMembers) {
-    if ($member.objectClass -eq "user") {
-        # Check if the member is a user object
-        $user = Get-ADUser -Identity $member
-        # Update the extensionAttribute (change -replace to -add if you want to append)
-        Set-ADUser -Identity $user -Replace @{extensionAttribute1 = $extensionAttributeNewValue}
-        Write-Host "Updated extensionAttribute for $($user.SamAccountName)"
-    }
-    else {
-        Write-Host "$($member.Name) is not a user object and will not be updated."
+# Filter applications with SAML configured
+$samlApps = $enterpriseApps | Where-Object {
+    $_.RequiredResourceAccess | Where-Object {
+        $_.ResourceAppId -eq "00000002-0000-0ff1-ce00-000000000000" -and
+        $_.ResourceAccess | Where-Object {
+            $_.Type -eq "4c4e3f75-f06f-4c0b-9c94-8eb37500d12d" -and
+            $_.Id -eq "7ab1d382-f21e-4cce-8a61-758e6303090b"
+        }
     }
 }
+
+# Display the list of Enterprise Applications with SAML
+$samlApps | Select-Object -Property DisplayName, AppId, ObjectID | Format-Table -AutoSize
+
+# Disconnect from Azure AD
+Disconnect-AzureAD
