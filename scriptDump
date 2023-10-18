@@ -1,25 +1,27 @@
-# Install the AzureAD module if you haven't already
-# Install-Module -Name AzureAD
+# Load the Active Directory module
+Import-Module ActiveDirectory
 
-# Connect to Azure AD
-Connect-AzureAD
+# Define the path to your CSV file
+$csvFile = "C:\path\to\users.csv"
 
-# Get a list of all Enterprise Applications
-$enterpriseApps = Get-AzureADApplication -Filter "tags/any(c:c eq 'WindowsAzureActiveDirectoryOnPremises' or c eq 'WindowsAzureActiveDirectoryIntegratedApp')"
+# Read the CSV file
+$userGroups = Import-Csv $csvFile
 
-# Filter applications with SAML configured
-$samlApps = $enterpriseApps | Where-Object {
-    $_.RequiredResourceAccess | Where-Object {
-        $_.ResourceAppId -eq "00000002-0000-0ff1-ce00-000000000000" -and
-        $_.ResourceAccess | Where-Object {
-            $_.Type -eq "4c4e3f75-f06f-4c0b-9c94-8eb37500d12d" -and
-            $_.Id -eq "7ab1d382-f21e-4cce-8a61-758e6303090b"
+# Loop through each row in the CSV and add users to groups
+foreach ($row in $userGroups) {
+    $userUPN = $row.UserUPN
+    $groupName = $row.GroupName
+
+    # Check if the user and group exist
+    if (Get-ADUser -Filter {UserPrincipalName -eq $userUPN} -ErrorAction SilentlyContinue) {
+        if (Get-ADGroup -Filter {Name -eq $groupName} -ErrorAction SilentlyContinue) {
+            # Add the user to the group
+            Add-ADGroupMember -Identity $groupName -Members $userUPN
+            Write-Host "Added $userUPN to $groupName"
+        } else {
+            Write-Host "Group $groupName not found."
         }
+    } else {
+        Write-Host "User $userUPN not found."
     }
 }
-
-# Display the list of Enterprise Applications with SAML
-$samlApps | Select-Object -Property DisplayName, AppId, ObjectID | Format-Table -AutoSize
-
-# Disconnect from Azure AD
-Disconnect-AzureAD
