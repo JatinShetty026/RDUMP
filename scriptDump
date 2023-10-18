@@ -16,11 +16,14 @@ foreach ($row in $userGroups) {
     $user = Get-ADUser -Filter {UserPrincipalName -eq $userUPN} -Properties sAMAccountName -ErrorAction SilentlyContinue
 
     if ($user -ne $null) {
-        if (Get-ADGroup -Filter {Name -eq $groupName} -ErrorAction SilentlyContinue) {
-            $sAMAccountName = $user.sAMAccountName
+        $group = Get-ADGroup -Filter {Name -eq $groupName} -Properties sAMAccountName -ErrorAction SilentlyContinue
+
+        if ($group -ne $null) {
+            $sAMAccountName = $group.sAMAccountName
+            $userSAM = $user.sAMAccountName
             # Add the user to the group using sAMAccountName
-            Add-ADGroupMember -Identity $groupName -Members $sAMAccountName
-            Write-Host "Added $sAMAccountName to $groupName"
+            Add-ADGroupMember -Identity $sAMAccountName -Members $userSAM
+            Write-Host "Added $userUPN to $groupName ($sAMAccountName)"
         } else {
             Write-Host "Group $groupName not found."
         }
